@@ -1,1 +1,387 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>SRAN JOB UPDATE</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f4f7fb;
+    color:#172033;
+}
+
+header{
+    background:linear-gradient(135deg,#0757a8,#0b82d8);
+    color:white;
+    text-align:center;
+    padding:25px 15px;
+}
+
+header h1{
+    margin:0;
+    font-size:30px;
+}
+
+header p{
+    margin:8px 0 0;
+}
+
+nav{
+    background:white;
+    padding:12px;
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:8px;
+    box-shadow:0 2px 8px #0002;
+}
+
+nav button{
+    border:0;
+    padding:10px 15px;
+    border-radius:8px;
+    background:#eaf2fb;
+    color:#0757a8;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+nav button:hover{
+    background:#0757a8;
+    color:white;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:20px;
+}
+
+.search{
+    background:white;
+    padding:18px;
+    border-radius:12px;
+    margin-bottom:20px;
+    box-shadow:0 3px 10px #0001;
+}
+
+.search input{
+    width:100%;
+    padding:13px;
+    border:1px solid #ccd5df;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:16px;
+}
+
+.card{
+    background:white;
+    padding:18px;
+    border-radius:12px;
+    box-shadow:0 3px 12px #0001;
+    border-left:5px solid #0757a8;
+}
+
+.badge{
+    display:inline-block;
+    background:#e7f1ff;
+    color:#0757a8;
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.card h2{
+    margin:10px 0;
+}
+
+.card p{
+    color:#566070;
+    line-height:1.5;
+}
+
+.apply{
+    display:inline-block;
+    background:#0757a8;
+    color:white;
+    padding:10px 15px;
+    text-decoration:none;
+    border-radius:7px;
+    font-weight:bold;
+}
+
+footer{
+    margin-top:30px;
+    background:#172033;
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+@media(max-width:600px){
+    header h1{
+        font-size:24px;
+    }
+
+    .container{
+        padding:12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>SRAN JOB UPDATE</h1>
+    <p>Government Jobs • Private Jobs • Admit Card • Result • Admission Form</p>
+</header>
+
+<nav>
+    <button onclick="showCategory('all')">All Updates</button>
+    <button onclick="showCategory('govt')">Govt Job</button>
+    <button onclick="showCategory('private')">Private Job</button>
+    <button onclick="showCategory('admit')">Admit Card</button>
+    <button onclick="showCategory('result')">Result</button>
+    <button onclick="showCategory('admission')">Admission Form</button>
+</nav>
+
+<div class="container">
+
+    <div class="search">
+        <input
+        type="text"
+        id="search"
+        placeholder="Search Job, Department, Qualification..."
+        onkeyup="searchJobs()">
+    </div>
+
+    <div id="jobs" class="grid"></div>
+
+</div>
+
+<footer>
+    <b>SRAN ENTERPRISES BHULLAN</b>
+    <br><br>
+    Online Form Apply • Job Updates
+</footer>
+
+
+<script>
+
+const jobs = [
+
+{
+category:"govt",
+title:"Government Job Updates",
+department:"Central & State Government",
+posts:"Various",
+qualification:"10th / 12th / Graduate",
+age:"As per Vacancy",
+lastdate:"Check Notification",
+details:"Latest Government Recruitment Updates",
+link:"#"
+},
+
+{
+category:"private",
+title:"Private Job Updates",
+department:"Private Companies",
+posts:"Various",
+qualification:"10th / 12th / Graduate",
+age:"As per Company",
+lastdate:"Various",
+details:"Latest Private Job Vacancies",
+link:"#"
+},
+
+{
+category:"admit",
+title:"Latest Admit Card",
+department:"Various Departments",
+posts:"—",
+qualification:"As per Exam",
+age:"—",
+lastdate:"Check Exam Date",
+details:"Latest Admit Card and Exam Updates",
+link:"#"
+},
+
+{
+category:"result",
+title:"Latest Results",
+department:"Various Exams",
+posts:"—",
+qualification:"—",
+age:"—",
+lastdate:"—",
+details:"Government Exam Results",
+link:"#"
+},
+
+{
+category:"admission",
+title:"Latest Admission Forms",
+department:"Universities / Colleges",
+posts:"Various",
+qualification:"10th / 12th / Graduate",
+age:"As per Course",
+lastdate:"Check Notification",
+details:"Latest Admission Form Updates",
+link:"#"
+}
+
+];
+
+
+let currentCategory="all";
+
+
+function displayJobs(list){
+
+    const box=document.getElementById("jobs");
+
+    if(list.length===0){
+
+        box.innerHTML="<h3>No Update Found</h3>";
+
+        return;
+    }
+
+    box.innerHTML="";
+
+    list.forEach(job=>{
+
+        box.innerHTML+=`
+
+        <div class="card">
+
+            <span class="badge">
+                ${getCategoryName(job.category)}
+            </span>
+
+            <h2>${job.title}</h2>
+
+            <p>
+            <b>Department:</b> ${job.department}
+            </p>
+
+            <p>
+            <b>Total Posts:</b> ${job.posts}
+            </p>
+
+            <p>
+            <b>Qualification:</b> ${job.qualification}
+            </p>
+
+            <p>
+            <b>Age Limit:</b> ${job.age}
+            </p>
+
+            <p>
+            <b>Last Date:</b> ${job.lastdate}
+            </p>
+
+            <p>
+            ${job.details}
+            </p>
+
+            <a class="apply"
+            href="${job.link}"
+            target="_blank">
+            Apply / Details →
+            </a>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+
+function getCategoryName(category){
+
+    if(category==="govt") return "GOVT JOB";
+    if(category==="private") return "PRIVATE JOB";
+    if(category==="admit") return "ADMIT CARD";
+    if(category==="result") return "RESULT";
+    if(category==="admission") return "ADMISSION";
+
+    return "UPDATE";
+
+}
+
+
+function showCategory(category){
+
+    currentCategory=category;
+
+    if(category==="all"){
+
+        displayJobs(jobs);
+
+    }else{
+
+        displayJobs(
+            jobs.filter(job=>job.category===category)
+        );
+
+    }
+
+}
+
+
+function searchJobs(){
+
+    const text=
+    document.getElementById("search")
+    .value
+    .toLowerCase();
+
+    let result=jobs.filter(job=>{
+
+        const matchCategory=
+        currentCategory==="all" ||
+        job.category===currentCategory;
+
+        const matchText=
+        (
+            job.title+
+            job.department+
+            job.qualification+
+            job.details
+        )
+        .toLowerCase()
+        .includes(text);
+
+        return matchCategory && matchText;
+
+    });
+
+    displayJobs(result);
+
+}
+
+
+displayJobs(jobs);
+
+</script>
+
+</body>
+</html>
