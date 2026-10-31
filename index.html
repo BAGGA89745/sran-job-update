@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -129,6 +130,7 @@ background:white;
 padding:25px;
 border-radius:12px;
 text-align:center;
+grid-column:1/-1;
 }
 
 footer{
@@ -169,7 +171,7 @@ header h1{font-size:24px}
 id="search"
 type="text"
 placeholder="Search vacancy, department, qualification..."
-onkeyup="searchJobs()">
+oninput="searchJobs()">
 </div>
 
 <div id="jobs" class="grid">
@@ -184,15 +186,11 @@ onkeyup="searchJobs()">
 Online Form Apply • Job Updates
 </footer>
 
-
 <script>
 
-/* =====================================================
-   SUPABASE DETAILS
-   YAHAN APNI DETAILS PASTE KARNI HAIN
-===================================================== */
+/* SUPABASE DETAILS */
 
-const SUPABASE_URL =  "https://ykwvyburvfevmvdnnryd.supabase.co";
+const SUPABASE_URL = "https://ykwvyburvfevmvdnnryd.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_jH24mIEPl186yPIDzRcYFg_nHRdegb6";
 
@@ -200,9 +198,9 @@ const SUPABASE_KEY = "sb_publishable_jH24mIEPl186yPIDzRcYFg_nHRdegb6";
 /* SUPABASE CONNECTION */
 
 const db = window.supabase.createClient(
-const SUPABASE_URL =  "https://ykwvyburvfevmvdnnryd.supabase.co";
-
-const SUPABASE_KEY = "sb_publishable_jH24mIEPl186yPIDzRcYFg_nHRdegb6";
+SUPABASE_URL,
+SUPABASE_KEY
+);
 
 
 /* VARIABLES */
@@ -216,30 +214,33 @@ let currentCategory = "all";
 
 async function loadJobs(){
 
-const { data, error } = await db
+const box = document.getElementById("jobs");
+
+try{
+
+const {data,error} = await db
 .from("vacancies")
 .select("*")
 .order("id",{ascending:false});
 
-if(error){
-
-console.error(error);
-
-document.getElementById("jobs").innerHTML =
-`
-<div class="empty">
-<h3>Data load nahi ho raha</h3>
-<p>Supabase connection check karein.</p>
-</div>
-`;
-
-return;
-
-}
+if(error) throw error;
 
 allJobs = data || [];
 
-displayJobs(allJobs);
+filterJobs();
+
+}catch(error){
+
+console.error("Supabase Error:",error);
+
+box.innerHTML = `
+<div class="empty">
+<h3>Data load nahi ho raha</h3>
+<p>Supabase connection ya database settings check karein.</p>
+</div>
+`;
+
+}
 
 }
 
@@ -268,20 +269,17 @@ filterJobs();
 
 function filterJobs(){
 
-const searchText =
-document.getElementById("search")
-.value
-.toLowerCase()
-.trim();
+const searchText = document
+.getElementById("search")
+.value.toLowerCase().trim();
 
-let result = allJobs.filter(job => {
+const result = allJobs.filter(job=>{
 
 const categoryMatch =
 currentCategory === "all" ||
 job.category === currentCategory;
 
-const text =
-`
+const text = `
 ${job.title || ""}
 ${job.department || ""}
 ${job.qualification || ""}
@@ -289,8 +287,7 @@ ${job.details || ""}
 `
 .toLowerCase();
 
-const searchMatch =
-text.includes(searchText);
+const searchMatch = text.includes(searchText);
 
 return categoryMatch && searchMatch;
 
@@ -305,13 +302,11 @@ displayJobs(result);
 
 function displayJobs(list){
 
-const box =
-document.getElementById("jobs");
+const box = document.getElementById("jobs");
 
 if(!list.length){
 
-box.innerHTML =
-`
+box.innerHTML = `
 <div class="empty">
 <h3>No Update Found</h3>
 <p>Is category mein abhi vacancy available nahi hai.</p>
@@ -322,11 +317,9 @@ return;
 
 }
 
-
 box.innerHTML = "";
 
-
-list.forEach(job => {
+list.forEach(job=>{
 
 box.innerHTML += `
 
@@ -336,60 +329,33 @@ box.innerHTML += `
 ${categoryName(job.category)}
 </span>
 
-<h2>
-${safe(job.title)}
-</h2>
+<h2>${safe(job.title)}</h2>
 
-<p>
-<b>Department:</b>
-${safe(job.department)}
-</p>
+<p><b>Department:</b> ${safe(job.department)}</p>
 
-<p>
-<b>Total Posts:</b>
-${safe(job.posts)}
-</p>
+<p><b>Total Posts:</b> ${safe(job.posts)}</p>
 
-<p>
-<b>Qualification:</b>
-${safe(job.qualification)}
-</p>
+<p><b>Qualification:</b> ${safe(job.qualification)}</p>
 
-<p>
-<b>Age Limit:</b>
-${safe(job.age)}
-</p>
+<p><b>Age Limit:</b> ${safe(job.age)}</p>
 
-<p>
-<b>Application Fee:</b>
-${safe(job.fee)}
-</p>
+<p><b>Application Fee:</b> ${safe(job.fee)}</p>
 
-<p>
-<b>Last Date:</b>
-${safe(job.last_date)}
-</p>
+<p><b>Last Date:</b> ${safe(job.last_date)}</p>
 
-<p>
-<b>Salary:</b>
-${safe(job.salary)}
-</p>
+<p><b>Salary:</b> ${safe(job.salary)}</p>
 
-<p>
-${safe(job.details)}
-</p>
+<p>${safe(job.details)}</p>
 
 ${
 job.apply_link
 ?
-`
-<a
-class="apply"
+`<a class="apply"
 href="${safe(job.apply_link)}"
-target="_blank">
+target="_blank"
+rel="noopener noreferrer">
 Apply Online →
-</a>
-`
+</a>`
 :
 ""
 }
@@ -407,27 +373,22 @@ Apply Online →
 
 function categoryName(category){
 
-if(category==="govt")
-return "GOVT JOB";
+if(category==="govt") return "GOVT JOB";
 
-if(category==="private")
-return "PRIVATE JOB";
+if(category==="private") return "PRIVATE JOB";
 
-if(category==="admit")
-return "ADMIT CARD";
+if(category==="admit") return "ADMIT CARD";
 
-if(category==="result")
-return "RESULT";
+if(category==="result") return "RESULT";
 
-if(category==="admission")
-return "ADMISSION FORM";
+if(category==="admission") return "ADMISSION FORM";
 
 return "UPDATE";
 
 }
 
 
-/* BASIC TEXT SAFETY */
+/* TEXT SAFETY */
 
 function safe(value){
 
