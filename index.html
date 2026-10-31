@@ -236,7 +236,7 @@ console.error("Supabase Error:",error);
 box.innerHTML = `
 <div class="empty">
 <h3>Data load nahi ho raha</h3>
-<p>Supabase connection ya database settings check karein.</p>
+<p>${safe(error.message)}</p>
 </div>
 `;
 
