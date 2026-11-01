@@ -1,10 +1,9 @@
-
+,
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>SRAN JOB UPDATE</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -26,14 +25,8 @@ text-align:center;
 padding:25px 15px;
 }
 
-header h1{
-margin:0;
-font-size:30px;
-}
-
-header p{
-margin:8px 0 0;
-}
+header h1{margin:0;font-size:30px}
+header p{margin:8px 0 0}
 
 nav{
 background:white;
@@ -45,20 +38,20 @@ gap:8px;
 box-shadow:0 2px 8px #0002;
 }
 
+button{
+cursor:pointer;
+font-weight:bold;
+}
+
 nav button{
 border:0;
 padding:10px 15px;
 border-radius:8px;
 background:#eaf2fb;
 color:#0757a8;
-font-weight:bold;
-cursor:pointer;
 }
 
-nav button:hover{
-background:#0757a8;
-color:white;
-}
+nav button:hover{background:#0757a8;color:white}
 
 .container{
 max-width:1100px;
@@ -88,7 +81,7 @@ grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
 gap:16px;
 }
 
-.card{
+.card,.detail-card{
 background:white;
 padding:18px;
 border-radius:12px;
@@ -106,24 +99,23 @@ font-size:12px;
 font-weight:bold;
 }
 
-.card h2{
-margin:10px 0;
-}
+.card h2{margin:10px 0}
+.card p{color:#566070;line-height:1.5}
 
-.card p{
-color:#566070;
-line-height:1.5;
-}
-
-.apply{
+.apply,.view-btn,.back-btn{
 display:inline-block;
+border:0;
 background:#0757a8;
 color:white;
-padding:10px 15px;
+padding:11px 16px;
 text-decoration:none;
 border-radius:7px;
 font-weight:bold;
+margin:5px 5px 5px 0;
 }
+
+.view-btn{background:#0b82d8}
+.back-btn{background:#172033}
 
 .empty{
 background:white;
@@ -131,6 +123,61 @@ padding:25px;
 border-radius:12px;
 text-align:center;
 grid-column:1/-1;
+}
+
+.detail-card{
+border-left:0;
+margin-bottom:20px;
+}
+
+.detail-title{
+background:linear-gradient(135deg,#0757a8,#0b82d8);
+color:white;
+padding:22px;
+border-radius:10px;
+margin-bottom:18px;
+}
+
+.detail-title h2{margin:10px 0}
+
+.detail-section{
+background:#fff;
+padding:18px;
+margin:14px 0;
+border:1px solid #e2e8f0;
+border-radius:10px;
+}
+
+.detail-section h3{
+color:#0757a8;
+margin-top:0;
+border-bottom:2px solid #eaf2fb;
+padding-bottom:10px;
+}
+
+.detail-section p{
+line-height:1.7;
+color:#39465a;
+white-space:pre-wrap;
+overflow-wrap:anywhere;
+}
+
+.detail-table{
+width:100%;
+border-collapse:collapse;
+}
+
+.detail-table td{
+padding:11px;
+border:1px solid #e2e8f0;
+vertical-align:top;
+overflow-wrap:anywhere;
+}
+
+.detail-table td:first-child{
+font-weight:bold;
+width:38%;
+background:#f4f7fb;
 }
 
 footer{
@@ -141,9 +188,12 @@ text-align:center;
 padding:25px;
 }
 
+[hidden]{display:none!important}
+
 @media(max-width:600px){
 header h1{font-size:24px}
 .container{padding:12px}
+.detail-table td{padding:8px;font-size:14px}
 }
 </style>
 </head>
@@ -155,7 +205,7 @@ header h1{font-size:24px}
 <p>Government Jobs • Private Jobs • Admit Card • Result • Admission Form</p>
 </header>
 
-<nav>
+<nav id="navigation">
 <button onclick="showCategory('all')">All Updates</button>
 <button onclick="showCategory('govt')">Govt Job</button>
 <button onclick="showCategory('private')">Private Job</button>
@@ -166,10 +216,10 @@ header h1{font-size:24px}
 
 <div class="container">
 
+<div id="listing">
+
 <div class="search">
-<input
-id="search"
-type="text"
+<input id="search" type="text"
 placeholder="Search vacancy, department, qualification..."
 oninput="searchJobs()">
 </div>
@@ -177,6 +227,10 @@ oninput="searchJobs()">
 <div id="jobs" class="grid">
 <div class="empty">Loading updates...</div>
 </div>
+
+</div>
+
+<div id="detailsPage" hidden></div>
 
 </div>
 
@@ -188,27 +242,18 @@ Online Form Apply • Job Updates
 
 <script>
 
-/* SUPABASE DETAILS */
+/* SUPABASE CONNECTION */
 
 const SUPABASE_URL = "https://ykwvyburvfevmvdnnryd.supabase.co";
-
 const SUPABASE_KEY = "sb_publishable_jH24mIEPl186yPIDzRcYFg_nHRdegb6";
-
-
-/* SUPABASE CONNECTION */
 
 const db = window.supabase.createClient(
 SUPABASE_URL,
 SUPABASE_KEY
 );
 
-
-/* VARIABLES */
-
 let allJobs = [];
-
 let currentCategory = "all";
-
 
 /* LOAD VACANCIES */
 
@@ -226,44 +271,34 @@ const {data,error} = await db
 if(error) throw error;
 
 allJobs = data || [];
-console.log("Total vacancies:", allJobs.length, allJobs);
 filterJobs();
 
 }catch(error){
 
-console.error("Supabase Error:",error);
+console.error(error);
 
 box.innerHTML = `
 <div class="empty">
 <h3>Data load nahi ho raha</h3>
 <p>${safe(error.message)}</p>
-</div>
-`;
+</div>`;
 
 }
 
 }
-
 
 /* CATEGORY */
 
 function showCategory(category){
-
 currentCategory = category;
-
 filterJobs();
-
 }
-
 
 /* SEARCH */
 
 function searchJobs(){
-
 filterJobs();
-
 }
-
 
 /* FILTER */
 
@@ -284,12 +319,9 @@ ${job.title || ""}
 ${job.department || ""}
 ${job.qualification || ""}
 ${job.details || ""}
-`
-.toLowerCase();
+`.toLowerCase();
 
-const searchMatch = text.includes(searchText);
-
-return categoryMatch && searchMatch;
+return categoryMatch && text.includes(searchText);
 
 });
 
@@ -297,8 +329,7 @@ displayJobs(result);
 
 }
 
-
-/* DISPLAY */
+/* DISPLAY VACANCIES */
 
 function displayJobs(list){
 
@@ -310,20 +341,19 @@ box.innerHTML = `
 <div class="empty">
 <h3>No Update Found</h3>
 <p>Is category mein abhi vacancy available nahi hai.</p>
-</div>
-`;
+</div>`;
 
 return;
-
 }
 
 box.innerHTML = "";
 
 list.forEach(job=>{
 
-box.innerHTML += `
+const card = document.createElement("div");
+card.className = "card";
 
-<div class="card">
+card.innerHTML = `
 
 <span class="badge">
 ${categoryName(job.category)}
@@ -332,61 +362,186 @@ ${categoryName(job.category)}
 <h2>${safe(job.title)}</h2>
 
 <p><b>Department:</b> ${safe(job.department)}</p>
-
 <p><b>Total Posts:</b> ${safe(job.posts)}</p>
-
 <p><b>Qualification:</b> ${safe(job.qualification)}</p>
-
 <p><b>Age Limit:</b> ${safe(job.age)}</p>
-
 <p><b>Application Fee:</b> ${safe(job.fee)}</p>
-
 <p><b>Last Date:</b> ${safe(job.last_date)}</p>
-
 <p><b>Salary:</b> ${safe(job.salary)}</p>
-
 <p>${safe(job.details)}</p>
 
-${
-job.apply_link
-?
-`<a class="apply"
+<button class="view-btn" type="button">
+View Full Details →
+</button>
+
+${job.apply_link ? `
+<a class="apply"
 href="${safe(job.apply_link)}"
 target="_blank"
 rel="noopener noreferrer">
 Apply Online →
-</a>`
-:
-""
-}
-
-</div>
+</a>` : ""}
 
 `;
+
+card.querySelector(".view-btn").addEventListener("click",()=>{
+openDetails(job.id);
+});
+
+box.appendChild(card);
 
 });
 
 }
 
+/* FULL DETAILS PAGE */
+
+function openDetails(id){
+
+const job = allJobs.find(item=>String(item.id)===String(id));
+
+if(!job) return;
+
+document.getElementById("listing").hidden = true;
+document.getElementById("navigation").hidden = true;
+
+const page = document.getElementById("detailsPage");
+page.hidden = false;
+
+const section = (heading,value)=>{
+
+if(!value) return "";
+
+return `
+<div class="detail-section">
+<h3>${heading}</h3>
+<p>${safe(value)}</p>
+</div>`;
+
+};
+
+const linkButton = (url,label)=>{
+
+if(!url) return "";
+
+if(!/^https?:\/\//i.test(String(url).trim())) return "";
+
+return `
+<a class="apply"
+href="${safe(url)}"
+target="_blank"
+rel="noopener noreferrer">
+${label}
+</a>`;
+
+};
+
+page.innerHTML = `
+
+<button class="back-btn" onclick="backToJobs()">
+← Back to Vacancies
+</button>
+
+<div class="detail-card">
+
+<div class="detail-title">
+
+<span class="badge">${categoryName(job.category)}</span>
+
+<h2>${safe(job.title)}</h2>
+
+<p>${safe(job.department)}</p>
+
+</div>
+
+<div class="detail-section">
+<h3>Quick Summary</h3>
+
+<table class="detail-table">
+
+<tr><td>Organization</td><td>${safe(job.department)}</td></tr>
+<tr><td>Total Posts</td><td>${safe(job.posts)}</td></tr>
+<tr><td>Qualification</td><td>${safe(job.qualification)}</td></tr>
+<tr><td>Age Limit</td><td>${safe(job.age)}</td></tr>
+<tr><td>Application Fee</td><td>${safe(job.fee)}</td></tr>
+<tr><td>Last Date</td><td>${safe(job.last_date)}</td></tr>
+<tr><td>Salary</td><td>${safe(job.salary)}</td></tr>
+
+</table>
+</div>
+
+${section("Important Dates",job.important_dates)}
+
+${section("Vacancy Details",job.vacancy_details)}
+
+${section("Educational Qualification",job.qualification)}
+
+${section("Age Limit & Relaxation",job.age_relaxation)}
+
+${section("Salary Details",job.salary)}
+
+${section("Application Fees",job.fee)}
+
+${section("Selection Process",job.selection_process)}
+
+${section("Exam Pattern",job.exam_pattern)}
+
+${section("Documents Required",job.documents_required)}
+
+${section("How to Apply",job.how_to_apply)}
+
+${section("Other Important Information",job.details)}
+
+<div class="detail-section">
+
+<h3>Important Links</h3>
+
+${linkButton(job.apply_link,"Apply Online →")}
+
+${linkButton(job.notification_link,"Download Notification →")}
+
+${linkButton(job.official_website,"Official Website →")}
+
+</div>
+
+${section("Frequently Asked Questions (FAQs)",job.faqs)}
+
+<button class="back-btn" onclick="backToJobs()">
+← Back to Vacancies
+</button>
+
+</div>
+`;
+
+window.scrollTo({top:0,behavior:"smooth"});
+
+}
+
+/* BACK */
+
+function backToJobs(){
+
+document.getElementById("detailsPage").hidden = true;
+document.getElementById("listing").hidden = false;
+document.getElementById("navigation").hidden = false;
+
+window.scrollTo({top:0,behavior:"smooth"});
+
+}
 
 /* CATEGORY NAME */
 
 function categoryName(category){
 
 if(category==="govt") return "GOVT JOB";
-
 if(category==="private") return "PRIVATE JOB";
-
 if(category==="admit") return "ADMIT CARD";
-
 if(category==="result") return "RESULT";
-
 if(category==="admission") return "ADMISSION FORM";
 
 return "UPDATE";
 
 }
-
 
 /* TEXT SAFETY */
 
@@ -400,7 +555,6 @@ return String(value || "")
 .replace(/'/g,"&#039;");
 
 }
-
 
 /* START */
 
