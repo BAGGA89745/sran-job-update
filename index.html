@@ -226,7 +226,7 @@ const {data,error} = await db
 if(error) throw error;
 
 allJobs = data || [];
-
+console.log("Total vacancies:", allJobs.length, allJobs);
 filterJobs();
 
 }catch(error){
