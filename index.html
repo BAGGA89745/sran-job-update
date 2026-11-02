@@ -388,7 +388,43 @@ box.appendChild(card);
 });
 
 }
+/* CATEGORY WISE FEES */
 
+function feeTable(job){
+
+const fees = [
+["General",job.fee_general],
+["BC / OBC",job.fee_bc],
+["SC",job.fee_sc],
+["EWS",job.fee_ews],
+["ST",job.fee_st]
+];
+
+const rows = fees
+.filter(item => item[1])
+.map(item => `
+<tr>
+<td>${item[0]}</td>
+<td>${safe(item[1])}</td>
+</tr>
+`).join("");
+
+if(!rows){
+return `
+<div class="detail-section">
+<h3>Application Fees</h3>
+<p>${safe(job.fee) || "Not Available"}</p>
+</div>`;
+}
+
+return `
+<div class="detail-section">
+<h3>Category Wise Application Fees</h3>
+<table class="detail-table">
+${rows}
+</table>
+</div>`;
+}
 /* FULL DETAILS PAGE */
 
 function openDetails(id){
@@ -458,7 +494,9 @@ page.innerHTML = `
 <tr><td>Total Posts</td><td>${safe(job.posts)}</td></tr>
 <tr><td>Qualification</td><td>${safe(job.qualification)}</td></tr>
 <tr><td>Age Limit</td><td>${safe(job.age)}</td></tr>
-<tr><td>Application Fee</td><td>${safe(job.fee)}</td></tr>
+<tr><td>Application Fees</td>
+<td>${safe(job.fee_general || job.fee || "Check Details")}</td></tr>
+
 <tr><td>Last Date</td><td>${safe(job.last_date)}</td></tr>
 <tr><td>Salary</td><td>${safe(job.salary)}</td></tr>
 
@@ -475,7 +513,7 @@ ${section("Age Limit & Relaxation",job.age_relaxation)}
 
 ${section("Salary Details",job.salary)}
 
-${section("Application Fees",job.fee)}
+${feeTable(job)}
 
 ${section("Selection Process",job.selection_process)}
 
